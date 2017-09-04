@@ -1,0 +1,43 @@
+library(rgdal)
+library(RColorBrewer)
+library(classInt)
+
+setwd("~/R/Plot_car_dealership")
+
+#latlong details for 
+datm <- read.csv("lat_data2.csv",header = TRUE)
+
+#shapefile of india
+india <- readOGR(".", "INDIA")
+#disbursement file
+state <- read.csv(file = "state.csv",header = TRUE)
+india$amt <- state$amt
+india$count <- state$count
+
+#creating breaks
+breaks.qt <- classIntervals(india$count, n = 7, style = "quantile")
+
+br <- breaks.qt$brks
+br
+br <- br[3:8]
+br
+br <- floor(br)
+
+
+bins <- br
+
+pal <- colorBin("RdYlGn", domain = india$count, bins = bins)
+m <-leaflet(data = datm) %>%
+  #addProviderTiles(provider = "CartoDB.DarkMatterNoLabels", options = tileOptions(minZoom=5, maxZoom=7))%>%
+  addMiniMap(position = "bottomright")%>%
+  addPolygons(data = india,
+              fillColor = ~pal(india$count),
+              weight = 2,
+              opacity = 1,
+              color = "white",
+              dashArray = "3",
+              fillOpacity = 0.7)%>%
+  addMarkers(datm, lng = ~lon, lat = ~lat,label = ~datm$city,icon = ~caricon)
+m %>% addLegend(pal = pal,values = india$count,title = "Disbursement count",position = "topright")  
+
+
