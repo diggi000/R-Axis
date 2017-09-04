@@ -1,26 +1,31 @@
-#check india map
-
 library(sp)
 library(RColorBrewer)
 library(classInt)
+
+#reading RDS file 
+ind1 <- readRDS("IND_adm2.rds")
+
+#getting sme district data
+sme <- read.csv("district.csv")
+
+#combine sme data to shape file
+ind1$sme <- sme$SME.inc
 
 #color scheme
 pal <- brewer.pal(9,"Greens")
 #spplot(ind1,"sme",col.regions = pal, cuts = 9)
 
-breaks.qt <- classIntervals(india$amt, n = 7, style = "quantile")
-
+breaks.qt <- classIntervals(ind1$sme, n = 6, style = "quantile")
 br <- breaks.qt$brks
-br
 offs <- 1e-07
 br[1] <- br[1] - offs
 br[length(br)] <- br[length(br)] + offs
-
+br <- c(br[1], -.08,0,br[2:length(br)])
 br_v <- br*100
 
 c <- paste(br_v,"%")
 #try improving legend
 #inserting facotrs column according to break list
-india$cut <- cut(india$amt, breaks = c(br, Inf))
+ind1$cut <- cut(ind1$sme, breaks = c(br, Inf))
 
 spplot(ind1, "cut", colorkey = list(height = 1, labels = list(at = seq(1, length(br)) , labels = c)), col.regions = pal)
