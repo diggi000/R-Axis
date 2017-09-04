@@ -1,0 +1,8 @@
+library(ggmap)
+datm <- read.csv("demo.csv", header = TRUE)
+city <- as.character(datm$City)
+
+#extracting lat long of cities
+lat <-  geocode(city,output = "latlon",source = "google")
+lat_data1 <- cbind(city,lat)
+write.csv(lat_data1,"lat_data1.csv"
