@@ -1,0 +1,44 @@
+library(rgdal)
+library(RColorBrewer)
+library(classInt)
+
+setwd("~/R/Plot_car_dealership")
+
+#latlong details for 
+datm <- read.csv("lat_data2.csv",header = TRUE)
+
+#shapefile of india
+india <- readOGR(".", "INDIA")
+#disbursement file
+state <- read.csv(file = "state.csv",header = TRUE)
+india$amt <- state$amt
+india$count <- state$count
+
+#creating breaks
+breaks.qt <- classIntervals(india$amt, n = 7, style = "quantile")
+
+br <- breaks.qt$brks
+br
+br <- br[3:8]
+br
+br <- floor(br)
+br[2]<- .5
+
+bins <- br
+
+pal <- colorBin("RdYlGn", domain = india$amt, bins = bins)
+amtlabel <- c("0-.4",".4-4.6","4.6-13.9","13.8-51.8","51.8-115.5")
+m <-leaflet(data = datm) %>%
+  #addProviderTiles(provider = "CartoDB.DarkMatterNoLabels", options = tileOptions(minZoom=5, maxZoom=7))%>%
+  #addMiniMap(position = "bottomright")%>%
+  addPolygons(data = india,
+              fillColor = ~pal(india$amt),
+              weight = 2,
+              opacity = 1,
+              color = "white",
+              dashArray = "3",
+              fillOpacity = 0.7)%>%
+  addMarkers(datm, lng = ~lon, lat = ~lat,label = ~datm$city,icon = ~caricon)
+m %>% addLegend(pal = pal,values = india$amt,title = "Disbursement amt in crs.",position = "topright")  
+
+
